@@ -6,14 +6,37 @@
 //
 
 import UIKit
+import EventKit
 
-class ViewController: UIViewController {
+final class ViewController: UIViewController {
 
+    private let eventStore = EKEventStore()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+    
+        eventStore.requestFullAccessToEvents { [weak self] state, error in
+            guard let self else { return }
+            switch state {
+            case true:
+                if let calendar = self.eventStore.defaultCalendarForNewEvents {
+                    let newEvent = EKEvent(eventStore: self.eventStore)
+                    newEvent.calendar = calendar
+                    newEvent.title = "새 이벤트"
+                    newEvent.startDate = Date()
+                    // 1시간 후
+                    newEvent.endDate = Date().addingTimeInterval(60 * 60)
+                    
+                    do {
+                        try eventStore.save(newEvent, span: .thisEvent)
+                    } catch {
+                        
+                    }
+                }
+            case false: break
+            }
+        }
     }
-
-
 }
+
 
